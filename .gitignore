@@ -8,4 +8,14 @@ env.bak/
 venv.bak/
 
 # Cache
-__pycache__/
+__pycache__
+.pytest_cache
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Other
+*.swp
+package-lock.json
+*.egg-info
