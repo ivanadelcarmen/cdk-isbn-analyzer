@@ -10,10 +10,14 @@ logger = logging.getLogger(__name__) # Set up logging
 
 def load_to_db(object, table_name):
     try:
+        # Set up DynamoDB resource and table
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table(table_name)
+
+        # Upload the data to the table
         response = table.put_item(Item=object)
 
+        # Log the uploaded data
         logger.info('Object loaded to DynamoDB table %s: %s', table_name, response)
 
     except ClientError as err:
@@ -24,11 +28,8 @@ def load_to_db(object, table_name):
 
 def lambda_handler(event, context):
     try:
+        # Set up Rekognition client and analyze the image from the S3 event
         rekognition = boto3.client('rekognition')
-        
-        event_date = event['Records'][0]['eventTime'][:10]
-        event_time = event['Records'][0]['eventTime'][11:19]
-
         image = {
             'S3Object': {
                     'Bucket': event['Records'][0]['s3']['bucket']['name'],
@@ -43,8 +44,7 @@ def lambda_handler(event, context):
         
         # Build the JSON object with ISBN data along with timestamp information from the S3 event
         book_data = structure_book_data(isbn)
-        book_data['date'] = event_date
-        book_data['time'] = event_time
+        book_data['timestamp'] = event['Records'][0]['eventTime']
 
         # Log the parsed data and load it into the DynamoDB table
         logger.info("Parsed data: %s", book_data)
