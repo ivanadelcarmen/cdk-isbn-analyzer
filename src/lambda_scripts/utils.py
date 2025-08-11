@@ -56,8 +56,7 @@ def structure_book_data(isbn: str) -> dict[str,Any]:
                 if 'subtitle' in volume_data.keys() else volume_data['title']
 
         formatted_data = {
-            'isbn_10': isbn_data[0]['identifier'],
-            'isbn_13': isbn_data[1]['identifier'],
+            'isbn': isbn_data[1]['identifier'], # By default, ISBN-13 is taken as the ID
             'authors': volume_data['authors'],
             'title': title,
             'categories': volume_data['categories'],
@@ -73,8 +72,8 @@ def structure_book_data(isbn: str) -> dict[str,Any]:
     # Proceed to build an exception object or message in case there are no matching results
     if isbn.isdigit() and (len(isbn) == 10 or len(isbn) == 13):
         return {
-            'exception': 1,
-            f'isbn_{len(isbn)}': isbn
+            'isbn': isbn,
+            'exception': 1
         }
     else:
         raise Exception(f'The selected value does not match ISBN-10 or ISBN-13 formats.', isbn)

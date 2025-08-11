@@ -29,8 +29,7 @@ class fetchBookDataSuite(unittest.TestCase):
 class structureBookDataSuite(unittest.TestCase):
     def test_matching_results(self):
         book_one = {
-            'isbn_10': '9876290509',
-            'isbn_13': '9789876290500',
+            'isbn': '9789876290500',
             'authors': ['Michel Foucault'],
             'title': 'Las palabras y las cosas: una arqueología de las ciencias humanas',
             'categories': ['Civilization'],
@@ -43,8 +42,7 @@ class structureBookDataSuite(unittest.TestCase):
         self.assertEqual(structure_book_data('9789876290500'), book_one)
 
         book_two = {
-            'isbn_10': '0393089053',
-            'isbn_13': '9780393089059',
+            'isbn': '9780393089059',
             'authors': ['Homer'],
             'title': 'The Odyssey',
             'categories': ['Poetry'],
@@ -58,14 +56,14 @@ class structureBookDataSuite(unittest.TestCase):
 
     def test_empty_results(self):
         isbn_10_exception = {
-            'exception': 1,
-            'isbn_10': '9744537984'
+            'isbn': '9744537984',
+            'exception': 1
         }
         self.assertEqual(structure_book_data('9744537984'), isbn_10_exception)
 
         isbn_13_exception = {
-            'exception': 1,
-            'isbn_13': '9742544919120'
+            'isbn': '9742544919120',
+            'exception': 1
         }
         self.assertEqual(structure_book_data('9742544919120'), isbn_13_exception)
 
