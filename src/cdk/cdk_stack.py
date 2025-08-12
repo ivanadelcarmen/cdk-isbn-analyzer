@@ -1,15 +1,15 @@
-from datetime import datetime
-
 from constructs import Construct
 from aws_cdk import (
     Stack,
     Duration,
+    RemovalPolicy,
     aws_iam as iam,
     aws_lambda as lambda_,
     aws_lambda_event_sources as lambda_event_sources,
     aws_apigateway as apigateway,
     aws_dynamodb as dynamodb,
-    aws_s3 as s3
+    aws_s3 as s3,
+    aws_logs as logs
 )
 
 class isbnProcessorStack(Stack):
@@ -20,31 +20,31 @@ class isbnProcessorStack(Stack):
         # S3 Bucket
         # =============================
 
-        # 1. Create a LifeCycle rule for isbn-images S3 bucket
+        # 1. Create a LifeCycle Rule for the S3 bucket
         s3_lifecycle_rule = s3. \
             LifecycleRule(
                 expiration=Duration.days(14)
             )
         
-        # 2. Create isbn-images S3 Bucket
+        # 2. Create S3 Bucket
         images_bucket = s3. \
             Bucket(
                 self,
-                id='CDKImagesBucket',
-                bucket_name=f'isbn-images-{datetime.now().strftime('%Y%m%d')}', # Use the current date as a bucket suffix
-                lifecycle_rules=[s3_lifecycle_rule]
+                id='ImagesBucket',
+                bucket_name='isbn-processor-images',
+                lifecycle_rules=[s3_lifecycle_rule],
+                removal_policy=RemovalPolicy.DESTROY
             )
-
         
         # =============================
         # API Gateway
         # =============================
 
-        # 1. Create role and grant s3:PutObject to the REST API, only for the isbn-images bucket
+        # 1. Create role and grant PUT access to the REST API, only for the created bucket
         rest_api_role = iam.\
             Role(
                 self,
-                id='CDKApiGatewayRole',
+                id='GatewayS3Role',
                 role_name='APIGatewayS3Role',
                 assumed_by=iam.ServicePrincipal('apigateway.amazonaws.com')
             )
@@ -77,24 +77,24 @@ class isbnProcessorStack(Stack):
                             status_code='400',
                             selection_pattern='4..',
                             response_templates={
-                                'application/json': '{"message": "Invalid request: check Content-Type and filename query string"}'
+                                'application/json': '{"message": "Invalid request: check Content-Type or filename query string"}'
                             }
                         )
                     ]
                 )
             )
 
-        # 3. Create API Gateway REST API with CloudWatch logging options
+        # 3. Create API Gateway REST API with CloudWatch options
         rest_api = apigateway. \
             RestApi(
                 self,
-                id='CDKApiGatewayRestApi',
+                id='GatewayS3RestAPI',
                 rest_api_name='upload-isbn',
-                binary_media_types=['image/jpeg', 'image/png'],
+                binary_media_types=['image/jpeg', 'image/png'], # Expect binary inputs for the allowed formats
                 cloud_watch_role=True,
+                cloud_watch_role_removal_policy=RemovalPolicy.DESTROY,
                 deploy_options=apigateway.StageOptions(
-                    logging_level=apigateway.MethodLoggingLevel.INFO,
-                    data_trace_enabled=True
+                    stage_name='v1'
                 )
             )
         images_endpoint = rest_api.root.add_resource('images')
