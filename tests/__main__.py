@@ -1,34 +1,79 @@
-import unittest
+import json
+import urllib.error
 
-# Import utils.py functions
+import unittest
+from unittest.mock import patch, MagicMock
+
 from src.scripts.utils import fetch_book_data, structure_book_data
 
-class fetchBookDataSuite(unittest.TestCase):
-    def test_correct_requests(self):
-        # The last one is a non-existent ISBN-10 but nonetheless queryable
-        isbns = ['9789876290500', '9780393089059', '9786071608154', '9780262510875', '9789538945']
-        for isbn in isbns:
-            self.assertEqual(fetch_book_data(isbn)['code'], 200)
+class TestFetchBookData(unittest.TestCase):
+    @patch('src.scripts.utils.urllib.request.urlopen')
+    def test_valid_request(self, mock_request_urlopen):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps({'title': 'Example'}).encode()
 
-    def test_correct_books(self):
-        isbns_ids = {
-            '9789876290500': '8vTsQgAACAAJ',
-            '9780393089059': '11GNEAAAQBAJ',
-            '9786071608154': 'eDwRNAEACAAJ',
-            '9780262510875': 'iL34DwAAQBAJ'
+        mock_request_urlopen.return_value.__enter__.return_value = mock_response
+
+        isbn = '9789876290500'
+        result = fetch_book_data(isbn)
+        self.assertEqual(result['code'], 200)
+        self.assertEqual(result['title'], 'Example')
+
+        # Check that the function also calls the right concatenated URL
+        mock_request_urlopen.assert_called_once_with(
+            f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}'
+        )
+    
+    @patch('src.scripts.utils.urllib.request.urlopen')
+    def test_http_error(self, mock_request_urlopen):
+        http_err = urllib.error.HTTPError(
+            url='api.example.com', code=404, msg='Not found', hdrs=None, fp=None
+        )
+        mock_request_urlopen.side_effect = http_err
+
+        result = fetch_book_data('9789876290500')
+        self.assertEqual(result['code'], 404)
+        self.assertEqual(result['reason'], 'Not found')
+
+    @patch('src.scripts.utils.urllib.request.urlopen')
+    def test_url_error(self, mock_request_urlopen):
+        url_err = urllib.error.URLError(
+            reason='Connection failed', filename=None
+        )
+        mock_request_urlopen.side_effect = url_err
+
+        result = fetch_book_data('9789876290500')
+        self.assertEqual(result['reason'], 'Connection failed')
+
+
+class TestStructureBookData(unittest.TestCase):
+    @patch('src.scripts.utils.fetch_book_data')
+    def test_matching_object(self, mock_fetch_book_data):
+        json_res = {
+            'totalItems': 1,
+            'items': [
+                {
+                    'volumeInfo': {
+                        'industryIdentifiers': [
+                            'mockItem',
+                            {
+                                'identifier': '9789876290500'
+                            }
+                        ],
+                        'authors': ['Michel Foucault'],
+                        'title': 'Las palabras y las cosas',
+                        'subtitle': 'una arqueología de las ciencias humanas',
+                        'categories': ['Civilization'],
+                        'pageCount': 398,
+                        'language': 'es',
+                        'publishedDate': '2011-03-20'
+                    }
+                }
+            ]
         }
-        for item in isbns_ids.items():
-            fetched_id = fetch_book_data(item[0])['items'][0]['id']
-            self.assertEqual(fetched_id, item[1])
+        mock_fetch_book_data.return_value = json_res
 
-    def test_incorrect_requests(self):
-        self.assertNotEqual(fetch_book_data('1'*100000)['code'], 200)
-        self.assertNotEqual(fetch_book_data('&q')['code'], 200)
-
-
-class structureBookDataSuite(unittest.TestCase):
-    def test_matching_results(self):
-        book_one = {
+        res_example = {
             'isbn': '9789876290500',
             'authors': ['Michel Foucault'],
             'title': 'Las palabras y las cosas: una arqueología de las ciencias humanas',
@@ -39,53 +84,41 @@ class structureBookDataSuite(unittest.TestCase):
             'published_year': 2011,
             'exception': 0
         }
-        self.assertEqual(structure_book_data('9789876290500'), book_one)
 
-        book_two = {
-            'isbn': '9780393089059',
-            'authors': ['Homer'],
-            'title': 'The Odyssey',
-            'categories': ['Poetry'],
-            'page_count': 0, # N/A
-            'language': 'EN',
-            'publisher': 'National Geographic Books',
-            'published_year': 2017,
-            'exception': 0
-        }
-        self.assertEqual(structure_book_data('9780393089059'), book_two)
+        # Use mock value '1' as argument
+        self.assertEqual(structure_book_data('1'), res_example)
 
-    def test_empty_results(self):
-        isbn_10_exception = {
-            'isbn': '9744537984',
+    @patch('src.scripts.utils.fetch_book_data')
+    def test_empty_object(self, mock_fetch_book_data):
+        json_res = {'totalItems': 0}
+        mock_fetch_book_data.return_value = json_res
+        
+        isbn_13 = '9742544919120'
+        isbn_10 = '9744537984'
+        res_example = {
             'exception': 1
         }
-        self.assertEqual(structure_book_data('9744537984'), isbn_10_exception)
 
-        isbn_13_exception = {
-            'isbn': '9742544919120',
-            'exception': 1
-        }
-        self.assertEqual(structure_book_data('9742544919120'), isbn_13_exception)
+        # The arguments for each case must be the same as the ISBN numbers in the variable example
+        res_example['isbn'] = isbn_13
+        self.assertEqual(structure_book_data(isbn_13), res_example)
 
-    def test_invalid_numerics(self):
-        with self.assertRaises(Exception) as assert_error:
+        res_example['isbn'] = isbn_10
+        self.assertEqual(structure_book_data(isbn_10), res_example) 
+
+    @patch('src.scripts.utils.fetch_book_data')
+    def test_invalid_values(self, mock_fetch_book_data):
+        mock_fetch_book_data.return_value = {'totalItems': 0}
+
+        # Numeric value with length unequal to 10 or 13
+        with self.assertRaises(ValueError) as assert_error:
             structure_book_data('123456')
         self.assertEqual(assert_error.exception.args[1], '123456')
-
-        with self.assertRaises(Exception) as assert_error:
-            structure_book_data('9758734587345796')
-        self.assertEqual(assert_error.exception.args[1], '9758734587345796')
-
-    def test_invalid_alphabetics(self):
-        # Length: 13
-        with self.assertRaises(Exception) as assert_error:
+        
+        # Alphabetic value with length 13
+        with self.assertRaises(ValueError) as assert_error:
             structure_book_data('abcdefghijklm')
         self.assertEqual(assert_error.exception.args[1], 'abcdefghijklm')
-
-        # Length: 10
-        with self.assertRaises(Exception) as assert_error:
-            structure_book_data('abcdefghij')
-        self.assertEqual(assert_error.exception.args[1], 'abcdefghij')
 
 
 if __name__ == '__main__':
