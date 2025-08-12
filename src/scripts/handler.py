@@ -4,7 +4,7 @@ import logging
 
 import boto3
 from botocore.exceptions import ClientError
-from utils import structure_book_data
+from src.scripts.utils import structure_book_data
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def lambda_handler(event, context):
         book_data['timestamp'] = event['Records'][0]['eventTime']
 
         # Log the parsed data and load it into the DynamoDB table
-        logger.info("Parsed data: %s", book_data)
+        logger.info('Parsed data: %s', book_data)
         load_to_db(book_data, os.getenv('TABLE_NAME'))
         
     except ClientError as err:

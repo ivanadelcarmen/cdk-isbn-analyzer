@@ -1,10 +1,12 @@
 import json
+import os
 import urllib.error
 
 import unittest
 from unittest.mock import patch, MagicMock
 
 from src.scripts.utils import fetch_book_data, structure_book_data
+from src.scripts.handler import lambda_handler
 
 class TestFetchBookData(unittest.TestCase):
     @patch('src.scripts.utils.urllib.request.urlopen')
@@ -49,16 +51,14 @@ class TestFetchBookData(unittest.TestCase):
 class TestStructureBookData(unittest.TestCase):
     @patch('src.scripts.utils.fetch_book_data')
     def test_matching_object(self, mock_fetch_book_data):
-        json_res = {
+        mock_res = {
             'totalItems': 1,
             'items': [
                 {
                     'volumeInfo': {
                         'industryIdentifiers': [
-                            'mockItem',
-                            {
-                                'identifier': '9789876290500'
-                            }
+                            'mock_item',
+                            {'identifier': '9789876290500'}
                         ],
                         'authors': ['Michel Foucault'],
                         'title': 'Las palabras y las cosas',
@@ -71,7 +71,7 @@ class TestStructureBookData(unittest.TestCase):
                 }
             ]
         }
-        mock_fetch_book_data.return_value = json_res
+        mock_fetch_book_data.return_value = mock_res
 
         res_example = {
             'isbn': '9789876290500',
@@ -90,8 +90,8 @@ class TestStructureBookData(unittest.TestCase):
 
     @patch('src.scripts.utils.fetch_book_data')
     def test_empty_object(self, mock_fetch_book_data):
-        json_res = {'totalItems': 0}
-        mock_fetch_book_data.return_value = json_res
+        mock_res = {'totalItems': 0}
+        mock_fetch_book_data.return_value = mock_res
         
         isbn_13 = '9742544919120'
         isbn_10 = '9744537984'
@@ -119,6 +119,71 @@ class TestStructureBookData(unittest.TestCase):
         with self.assertRaises(ValueError) as assert_error:
             structure_book_data('abcdefghijklm')
         self.assertEqual(assert_error.exception.args[1], 'abcdefghijklm')
+
+
+class TestLambdaHandler(unittest.TestCase):
+    @patch('src.scripts.handler.load_to_db')
+    @patch("src.scripts.handler.structure_book_data")
+    @patch("src.scripts.handler.boto3.client")
+    def test_lambda_handler_success(self, mock_boto, mock_structure, mock_load_db):
+        bucket_name = 'my-bucket'
+        file_name = 'test.jpg'
+        timestamp = '2025-01-01'
+
+        raw_isbn = '978-12345-67890'
+        clean_isbn = '9781234567890'
+
+        table_name = 'table-example'
+
+        s3_event = {
+            'Records': [
+                {
+                    's3': {
+                        'bucket': {'name': bucket_name},
+                        'object': {'key': file_name}
+                    },
+                    'eventTime': timestamp
+                }
+            ]
+        }
+
+        # Mock Rekognition output
+        mock_rekognition = MagicMock()
+        mock_rekognition.detect_text.return_value = {
+            'TextDetections': [
+                {'DetectedText': raw_isbn}
+            ]
+        }
+        mock_boto.return_value = mock_rekognition
+
+        # Mock structure_book_data() reduced output
+        mock_structure.return_value = {
+            'isbn': '9781234567890',
+            'exception': 0
+        }
+
+        # Call lambda_handler() with env variables and the fake S3 event
+        with patch.dict(os.environ, {'TABLE_NAME': table_name}):
+            lambda_handler(s3_event, None)
+
+        # Assert resulting values for each resource
+        mock_rekognition.detect_text.assert_called_once_with(
+            Image={
+                'S3Object': {
+                    'Bucket': bucket_name,
+                    'Name': file_name
+                }
+            }
+        )
+        mock_structure.assert_called_once_with(clean_isbn)
+        mock_load_db.assert_called_once_with(
+            {
+                'isbn': clean_isbn,
+                'exception': 0,
+                'timestamp': timestamp
+            },
+            table_name
+        )
 
 
 if __name__ == '__main__':
