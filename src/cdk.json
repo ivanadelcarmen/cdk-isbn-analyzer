@@ -4,10 +4,6 @@
     {
       "Key": "Application",
       "Value": "app-isbn-analyzer"
-    },
-    {
-      "Key": "Environment",
-      "Value": "production"
     }
   ],
   "context": {
