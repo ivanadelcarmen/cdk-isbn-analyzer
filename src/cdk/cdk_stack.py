@@ -125,3 +125,110 @@ class isbnProcessorStack(Stack):
                 )
             ]
         )
+
+        # =============================
+        # DynamoDB Table
+        # =============================
+        
+        # 1. Create the DynamoDB Table with provisioned settings
+        isbn_events_table = dynamodb. \
+            Table(
+                self,
+                id='EventsTable',
+                table_name='isbn_events',
+                billing_mode=dynamodb.BillingMode.PROVISIONED,
+                read_capacity=1,
+                write_capacity=4,
+                partition_key=dynamodb.Attribute(
+                    name='isbn',
+                    type=dynamodb.AttributeType.STRING
+                ),
+                sort_key=dynamodb.Attribute(
+                    name='timestamp',
+                    type=dynamodb.AttributeType.STRING
+                ),
+                removal_policy=RemovalPolicy.DESTROY
+            )
+
+        # =============================
+        # Lambda Function
+        # =============================
+        
+        # 1. Create inline policies
+        bucket_lambda_policy = iam. \
+            PolicyDocument(
+                statements=[
+                    iam.PolicyStatement(
+                        actions=['s3:GetObject'],
+                        resources=[f'{images_bucket.bucket_arn}/*']
+                    )
+                ]
+            )
+        
+        rekognition_lambda_policy = iam. \
+            PolicyDocument(
+                statements=[
+                    iam.PolicyStatement(
+                        actions=['rekognition:DetectText'],
+                        resources=['*']
+                    )
+                ]
+            )
+        
+        dynamodb_lambda_policy = iam. \
+            PolicyDocument(
+                statements=[
+                    iam.PolicyStatement(
+                        actions=['dynamodb:PutItem'],
+                        resources=[isbn_events_table.table_arn]
+                    )
+                ]
+            )
+        
+        # 2. Create custom Lambda execution role with managed and custom policies
+        lambda_exec_role = iam. \
+            Role(
+                self,
+                id='LambdaExecutionRole',
+                role_name='LambdaISBNProcessorRole',
+                assumed_by=iam.ServicePrincipal('lambda.amazonaws.com'),
+                managed_policies=[
+                    # Attach basic Lambda execution managed policies
+                    iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole')
+                ],
+                inline_policies={
+                    'LambdaS3BucketGetPolicy': bucket_lambda_policy,
+                    'LambdaRekognitionAccessPolicy': rekognition_lambda_policy,
+                    'LambdaDynamoDBTableAccessPolicy': dynamodb_lambda_policy
+                }
+            )
+
+        # 3. Create Lambda event source from S3
+        s3_event_source = lambda_event_sources. \
+            S3EventSource(
+                bucket=images_bucket,
+                events=[s3.EventType.OBJECT_CREATED_PUT]
+            )
+        
+        # 4. Create Lambda function with logging options and add event source
+        lambda_processor = lambda_. \
+            Function(
+                self,
+                id='LambdaFunction',
+                function_name='isbn_processor',
+                runtime=lambda_.Runtime.PYTHON_3_12,
+                code=lambda_.Code.from_asset('lambda_scripts'),
+                handler='processor.lambda_handler',
+                role=lambda_exec_role,
+                timeout=Duration.seconds(8),
+                environment={
+                    'TABLE_NAME': isbn_events_table.table_name # Required environment variable for loading data
+                },
+                log_group=logs.LogGroup(
+                    self,
+                    id='LambdaLogGroup',
+                    retention=logs.RetentionDays.ONE_WEEK,
+                    removal_policy=RemovalPolicy.DESTROY
+                )
+            )
+        lambda_processor.add_event_source(s3_event_source)
