@@ -1,10 +1,16 @@
-#!/usr/bin/env python3
-import os
+from pathlib import Path
+from configparser import ConfigParser
 
 import aws_cdk as cdk
 
-from cdk.cdk_stack import isbnProcessorStack
+from cdk.stack import isbnProcessorStack
+
+config_file = Path(__file__).parent / 'config.conf'
+parser = ConfigParser()
+parser.read(config_file)
+
+REGION = parser.get('environment', 'region')
 
 app = cdk.App()
-isbnProcessorStack(app, 'cdk-isbn-processor')
+isbnProcessorStack(app, 'cdk-isbn-processor', env=cdk.Environment(region=REGION))
 app.synth()

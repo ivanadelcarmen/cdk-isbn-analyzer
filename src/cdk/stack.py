@@ -1,3 +1,6 @@
+from pathlib import Path
+from configparser import ConfigParser
+
 from constructs import Construct
 from aws_cdk import (
     Stack,
@@ -12,6 +15,32 @@ from aws_cdk import (
     aws_logs as logs
 )
 
+config_file = Path(__file__).parent.parent / 'config.conf'
+parser = ConfigParser()
+parser.read(config_file)
+
+TRANSITION_DAYS = parser.getint('lifecycleRules', 'transitionDays')
+EXPIRATION_DAYS = parser.getint('lifecycleRules', 'expirationDays')
+
+if TRANSITION_DAYS > 0 and EXPIRATION_DAYS > TRANSITION_DAYS:
+    transition_state = [
+        s3.Transition(
+            storage_class=s3.StorageClass.GLACIER_INSTANT_RETRIEVAL,
+            transition_after=Duration.days(TRANSITION_DAYS)
+        )
+    ]
+else:
+    transition_state = None
+
+REMOVAL_POLICY = parser.get('storagePolicies', 'removalPolicy').strip().upper()
+
+if REMOVAL_POLICY == 'DESTROY':
+    configured_removal = RemovalPolicy.DESTROY
+elif REMOVAL_POLICY == 'RETAIN':
+    configured_removal = RemovalPolicy.RETAIN
+else:
+    raise ValueError(f'Invalid removal policy: {REMOVAL_POLICY}')
+
 class isbnProcessorStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -23,7 +52,8 @@ class isbnProcessorStack(Stack):
         # 1. Create a LifeCycle Rule for the S3 bucket
         s3_lifecycle_rule = s3. \
             LifecycleRule(
-                expiration=Duration.days(14)
+                expiration=Duration.days(EXPIRATION_DAYS),
+                transitions=transition_state
             )
         
         # 2. Create S3 Bucket
@@ -33,7 +63,7 @@ class isbnProcessorStack(Stack):
                 id='ImagesBucket',
                 bucket_name='isbn-processor-images',
                 lifecycle_rules=[s3_lifecycle_rule],
-                removal_policy=RemovalPolicy.DESTROY
+                removal_policy=configured_removal
             )
         
         # =============================
@@ -147,7 +177,7 @@ class isbnProcessorStack(Stack):
                     name='timestamp',
                     type=dynamodb.AttributeType.STRING
                 ),
-                removal_policy=RemovalPolicy.DESTROY
+                removal_policy=configured_removal
             )
 
         # =============================
