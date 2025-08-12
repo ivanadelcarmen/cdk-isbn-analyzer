@@ -6,7 +6,9 @@ import boto3
 from botocore.exceptions import ClientError
 from utils import structure_book_data
 
-logger = logging.getLogger(__name__) # Set up logging
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def load_to_db(object, table_name):
     try:
