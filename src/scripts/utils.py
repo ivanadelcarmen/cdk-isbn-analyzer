@@ -22,9 +22,13 @@ def fetch_book_data(isbn: str) -> dict[str,Any]:
             response = json.loads(req.read().decode())
         response['code'] = 200
         return response
-    except (urllib.error.HTTPError, urllib.error.URLError) as err:
+    except urllib.error.HTTPError as err:
         return {
-            'code': err.code if err.code else -1,
+            'code': err.code,
+            'reason': err.reason
+        }
+    except urllib.error.URLError as err:
+        return {
             'reason': err.reason
         }
 
@@ -47,16 +51,14 @@ def structure_book_data(isbn: str) -> dict[str,Any]:
 
     # If there are matching results, select the first volume found
     if book_data['totalItems'] != 0:
-        book_data = book_data['items'][0]
-        volume_data = book_data['volumeInfo']
-        isbn_data = sorted(book_data['volumeInfo']['industryIdentifiers'], key=lambda x: x['type']) # ISBN 10, ISBN 13 in order
+        volume_data = book_data['items'][0]['volumeInfo']
 
         publisher = volume_data['publisher'] if 'publisher' in volume_data.keys() else 'N/A'
         title = f'{volume_data['title']}: {volume_data['subtitle']}' \
                 if 'subtitle' in volume_data.keys() else volume_data['title']
 
         formatted_data = {
-            'isbn': isbn_data[1]['identifier'], # By default, ISBN-13 is taken as the ID
+            'isbn': volume_data['industryIdentifiers'][1]['identifier'], # By default, ISBN-13 is taken as the ID
             'authors': volume_data['authors'],
             'title': title,
             'categories': volume_data['categories'],
