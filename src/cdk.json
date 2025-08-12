@@ -3,7 +3,11 @@
   "tags": [
     {
       "Key": "Application",
-      "Value": "isbn-processor-app"
+      "Value": "app-isbn-analyzer"
+    },
+    {
+      "Key": "Environment",
+      "Value": "production"
     }
   ],
   "context": {
