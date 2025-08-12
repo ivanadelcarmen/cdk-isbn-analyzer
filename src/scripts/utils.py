@@ -78,4 +78,4 @@ def structure_book_data(isbn: str) -> dict[str,Any]:
             'exception': 1
         }
     else:
-        raise Exception(f'The selected value does not match ISBN-10 or ISBN-13 formats.', isbn)
+        raise ValueError(f'The selected value does not match ISBN-10 or ISBN-13 formats.', isbn)
