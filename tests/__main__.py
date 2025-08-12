@@ -1,7 +1,7 @@
 import unittest
 
 # Import utils.py functions
-from src.lambda_scripts.utils import fetch_book_data, structure_book_data
+from src.scripts.utils import fetch_book_data, structure_book_data
 
 class fetchBookDataSuite(unittest.TestCase):
     def test_correct_requests(self):

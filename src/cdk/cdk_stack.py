@@ -217,7 +217,7 @@ class isbnProcessorStack(Stack):
                 id='LambdaFunction',
                 function_name='isbn_processor',
                 runtime=lambda_.Runtime.PYTHON_3_12,
-                code=lambda_.Code.from_asset('lambda_scripts'),
+                code=lambda_.Code.from_asset('scripts'),
                 handler='handler.lambda_handler',
                 role=lambda_exec_role,
                 timeout=Duration.seconds(8),
