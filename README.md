@@ -34,7 +34,7 @@ To manage the stack without changing internal project settings, run CDK-related 
     * **expirationDays**: The remaining days before automatic deletion of files uploaded to the stack's S3 bucket, expressed as an integer greater than 0. Default: 30
     * **transitionDays**: The remaining days before automatic transitioning of files uploaded to the stack's S3 bucket to the Glacier Instant Retrieval storage class, expressed as an integer greater than 0. Transitioning can be optionally avoided by setting a value of 0 or setting a value greater than expirationDays. Default: 14
 * `storagePolicies`
-    * **removalPolicy**: The type of RemovalPolicy for storage-related resources including S3 and DynamoDB, which can be either "DESTROY" to totally delete these resources after stack destruction, recommended for testing or development, or "RETAIN" to preserve them. Default: DESTROY
+    * **removalPolicy**: The type of RemovalPolicy for storage-related resources including S3 and DynamoDB, which can be either DESTROY to totally delete these resources after stack destruction, recommended for testing or development purposes, or RETAIN to preserve them. Default: DESTROY
 * `deployOptions`
     * **region**: The AWS code of the region in which the stack will be deployed. Default: us-east-1
 
