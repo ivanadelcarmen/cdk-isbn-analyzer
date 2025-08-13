@@ -252,7 +252,7 @@ class isbnProcessorStack(Stack):
                 code=lambda_.Code.from_asset('scripts'),
                 handler='handler.lambda_handler',
                 role=lambda_exec_role,
-                timeout=Duration.seconds(8),
+                timeout=Duration.seconds(5),
                 environment={
                     'TABLE_NAME': isbn_events_table.table_name # Required environment variable for loading data
                 },
