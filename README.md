@@ -29,7 +29,18 @@ The following program fetches relevant book data from the Google Books API given
 
 ### Guideline
 
-To manage the stack without changing internal project settings, run CDK-related commands inside the `src/` directory which contains the already configured source files. Basic deployment settings can be configured in `config.conf` before deploying the stack which include:
+Before deploying the project, dependencies have to be installed globally or locally in a virtual environment placed in the root directory which has to be activated. To manage the stack without changing internal project settings, run CDK-related commands inside the `src/` directory which contains the already configured source files. Example for Unix-based shells:
+
+``` bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+``` bash
+cd src
+```
+
+Basic deployment settings can be configured in `config.conf` before deploying the stack which include:
 
 * `s3Options`
     * **bucketName**: The name of the stack's S3 bucket. Default: cdk-isbn-analyzer-images
@@ -40,7 +51,7 @@ To manage the stack without changing internal project settings, run CDK-related 
 * `deployOptions`
     * **region**: The AWS code of the region in which the stack will be deployed. Default: us-east-1
 
-Before deploying the project, dependencies have to be installed globally or locally in a virtual environment which has to be activated before running the specified commands. Additionally, include the `--profile PROFILE_NAME` flag in case of having configured a specific AWS CLI profile.
+Additionally, include the `--profile PROFILE_NAME` flag in case of having configured a specific AWS CLI profile.
 
 Preview the CloudFormation template and deploy the project to the cloud by running:
 
