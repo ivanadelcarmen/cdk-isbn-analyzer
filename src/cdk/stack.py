@@ -19,8 +19,10 @@ config_file = Path(__file__).parent.parent / 'config.conf'
 parser = ConfigParser()
 parser.read(config_file)
 
-TRANSITION_DAYS = parser.getint('lifecycleRules', 'transitionDays')
-EXPIRATION_DAYS = parser.getint('lifecycleRules', 'expirationDays')
+BUCKET_NAME = parser.get('s3Options', 'bucketName')
+
+TRANSITION_DAYS = parser.getint('s3Options', 'transitionDays')
+EXPIRATION_DAYS = parser.getint('s3Options', 'expirationDays')
 
 if TRANSITION_DAYS > 0 and EXPIRATION_DAYS > TRANSITION_DAYS:
     transition_state = [
@@ -61,7 +63,7 @@ class isbnProcessorStack(Stack):
             Bucket(
                 self,
                 id='ImagesBucket',
-                bucket_name='isbn-processor-images',
+                bucket_name=BUCKET_NAME,
                 lifecycle_rules=[s3_lifecycle_rule],
                 removal_policy=configured_removal
             )
