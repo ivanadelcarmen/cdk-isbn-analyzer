@@ -74,7 +74,7 @@ The S3 bucket is configured as an event source that triggers a Lambda function w
 
 Digits are extracted from the first line detected by the Rekognition client and are joined together into a single string. The Lambda handler calls the `utils.py` module in order to use the parsed ISBN number to make a request to the Google Books API using `urllib` and reformat the JSON response with relevant fields and friendly column names. The resulting object has the following format:
 
-``` json
+``` jsonc
 {
     "isbn": "string",            // ISBN-13 identifier, where ISBN-10 is allowed if there are no matches
     "authors": "array",          // Array of authors
