@@ -81,7 +81,7 @@ class TestStructureBookData(unittest.TestCase):
             'page_count': 398,
             'language': 'ES',
             'publisher': 'N/A',
-            'published_year': 2011,
+            'year': 2011,
             'exception': 0
         }
 

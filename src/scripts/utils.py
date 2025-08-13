@@ -65,7 +65,7 @@ def structure_book_data(isbn: str) -> dict[str,Any]:
             'page_count': volume_data['pageCount'],
             'language': volume_data['language'].upper(),
             'publisher': publisher,
-            'published_year': int(volume_data['publishedDate'][:4]),
+            'year': int(volume_data['publishedDate'][:4]),
             'exception': 0
         }
 

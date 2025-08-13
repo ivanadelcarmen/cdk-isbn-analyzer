@@ -76,16 +76,16 @@ Digits are extracted from the first line detected by the Rekognition client and 
 
 ``` jsonc
 {
-    "isbn": "str",            // ISBN-13 identifier, where ISBN-10 is allowed if there are no matches
-    "authors": "array",       // Array of authors
-    "title": "str",           // Full title of the book
-    "categories": "array",    // Array of category names
-    "page_count": "int",      // Integer representing the number of pages
-    "language": "str",        // Two-character upper string representing the language
-    "publisher": "str",       // Name of the publisher company
-    "published_year": "int",  // Four-digit number representing the publication year
-    "exception": "int",       // Binary digit to indicate whether the book was found (0) or not (1)
-    "timestamp": "str"        // UTC timestamp of the S3 event
+    "isbn": "str",          // ISBN-13 identifier, where ISBN-10 is allowed if there are no matches
+    "authors": "array",     // Array of authors
+    "title": "str",         // Full title of the book
+    "categories": "array",  // Array of category names
+    "page_count": "int",    // Integer representing the number of pages
+    "language": "str",      // Two-character upper string representing the language
+    "publisher": "str",     // Name of the publisher company
+    "year": "int",          // Four-digit number representing the publication year
+    "exception": "int",     // Binary digit to indicate whether the book was found (0) or not (1)
+    "timestamp": "str"      // UTC timestamp of the S3 event
 }
 ```
 
