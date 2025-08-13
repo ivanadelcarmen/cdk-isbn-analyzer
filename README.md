@@ -60,10 +60,10 @@ cdk destroy
 
 ### Integration
 
-The stack includes an API Gateway REST API by which users can send .jpg or .png images using the HTTP PUT method along with a Content-Type header —`image/jpeg` or `image/png`—, uploading as binary data, and specifying the file name and extension in the `filename` query parameter. The images must be uploaded to the `images` endpoint of the API's URL as in the following example using cURL:
+The stack includes an API Gateway REST API by which users can send .jpg or .png images using the HTTP PUT method along with a Content-Type header —`image/jpeg` or `image/png`—, uploading as binary data, and specifying the file name and extension in the `filename` query parameter. The images must be uploaded to the `analyze` endpoint of the API's URL as in the following example using cURL:
 
 ``` bash
-curl -X PUT "https://id.region.amazonaws.com/v1/images?filename=example.jpg" \ 
+curl -X PUT "https://id.region.amazonaws.com/v1/analyze?filename=example.jpg" \ 
      -H "Content-Type: image/jpeg" \
      --data-binary "example.jpg"
 ```

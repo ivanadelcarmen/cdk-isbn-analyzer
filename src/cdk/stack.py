@@ -129,7 +129,7 @@ class isbnProcessorStack(Stack):
                     stage_name='v1'
                 )
             )
-        images_endpoint = rest_api.root.add_resource('images')
+        images_endpoint = rest_api.root.add_resource('analyze')
 
         # 4. Add S3 integration and specify + validate request parameters
         images_endpoint.add_method(
