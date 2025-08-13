@@ -22,7 +22,7 @@ The following program fetches relevant book data from the Google Books API given
 
 * CDK bootstrapped in the AWS account, done by running:
     ``` bash
-    cdk bootstrap [--profile <profile_name>]
+    cdk bootstrap [--profile PROFILE_NAME]
     ```
 
 ### Guideline
@@ -38,7 +38,7 @@ To manage the stack without changing internal project settings, run CDK-related 
 * `deployOptions`
     * **region**: The AWS code of the region in which the stack will be deployed. Default: us-east-1
 
-Before deploying the project, dependencies have to be installed globally or locally in a virtual environment which has to be activated before running the specified commands. Additionally, include the `--profile <profile_name>` flag in case of having configured a specific AWS CLI profile.
+Before deploying the project, dependencies have to be installed globally or locally in a virtual environment which has to be activated before running the specified commands. Additionally, include the `--profile PROFILE_NAME` flag in case of having configured a specific AWS CLI profile.
 
 Preview the CloudFormation template and deploy the project to the cloud by running:
 
@@ -76,16 +76,16 @@ Digits are extracted from the first line detected by the Rekognition client and 
 
 ``` jsonc
 {
-    "isbn": "string",            // ISBN-13 identifier, where ISBN-10 is allowed if there are no matches
-    "authors": "array",          // Array of authors
-    "title": "string",           // Full title of the book
-    "categories": "array",       // Array of category names
-    "page_count": "integer",     // Integer representing the number of pages
-    "language": "string",        // Two-character upper string representing the language
-    "publisher": "string",       // Name of the publisher company
-    "published_year": "integer", // Four-digit number representing the publication year
-    "exception": "integer",      // Binary digit to indicate whether the book was found (0) or not (1)
-    "timestamp": "string"        // UTC timestamp of the S3 event
+    "isbn": "str",            // ISBN-13 identifier, where ISBN-10 is allowed if there are no matches
+    "authors": "array",       // Array of authors
+    "title": "str",           // Full title of the book
+    "categories": "array",    // Array of category names
+    "page_count": "int",      // Integer representing the number of pages
+    "language": "str",        // Two-character upper string representing the language
+    "publisher": "str",       // Name of the publisher company
+    "published_year": "int",  // Four-digit number representing the publication year
+    "exception": "int",       // Binary digit to indicate whether the book was found (0) or not (1)
+    "timestamp": "str"        // UTC timestamp of the S3 event
 }
 ```
 
@@ -106,20 +106,20 @@ python -m tests
 ```
 cdk-isbn-analyzer/
 │
-├── docs/                               # Files related to the project's documentation
-│   ├── diagram.png                     # Draw.io diagram for AWS architecture basic visualization
+├── docs/                  # Files related to the project's documentation
+│   ├── diagram.png        # Draw.io diagram for AWS architecture basic visualization
 │
-├── src/                                # Source files for the application
-│   ├── cdk/                            # Package related to the CDK stack
-│   ├── scripts/                        # Package related to Lambda scripts
-│   ├── app.py                          # Application file to be referenced by CDK
-│   ├── cdk.json                        # CDK configuration file with execution, tags, and context attributes
-│   ├── config.conf                     # Configuration file for setting up options within the stack
+├── src/                   # Source files for the application
+│   ├── cdk/               # Package related to the CDK stack
+│   ├── scripts/           # Package related to Lambda scripts
+│   ├── app.py             # Application file to be referenced by CDK
+│   ├── cdk.json           # CDK configuration file with execution, tags, and context attributes
+│   ├── config.conf        # Configuration file for setting up options within the stack
 │
-├── tests/                              # Package of tests for Lambda scripts
+├── tests/                 # Package of tests for Lambda scripts
 │
-├── README.md                           # Project overview, instructions, and architecture details
-├── LICENSE                             # License information for the repository
-├── .gitignore                          # Files and directories to be ignored by Git
-└── requirements.txt                    # Project dependencies to be installed using pip
+├── README.md              # Project overview, instructions, and architecture details
+├── LICENSE                # License information for the repository
+├── .gitignore             # Files and directories to be ignored by Git
+└── requirements.txt       # Project dependencies to be installed using pip
 ```
