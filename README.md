@@ -25,6 +25,8 @@ The following program fetches relevant book data from the Google Books API given
     cdk bootstrap [--profile PROFILE_NAME]
     ```
 
+#
+
 ### Guideline
 
 To manage the stack without changing internal project settings, run CDK-related commands inside the `src/` directory which contains the already configured source files. Basic deployment settings can be configured in `config.conf` before deploying the stack which include:
@@ -68,6 +70,8 @@ curl -X PUT "https://id.region.amazonaws.com/v1/analyze?filename=example.jpg" \
      --data-binary "example.jpg"
 ```
 
+The source name of the images can differ from the name assigned in the `filename` parameter, but the file extension should be identical and included to facilitate filtering files and visualization in S3.
+
 The REST API has a request validator, configured S3 integration, and sufficient CloudWatch permissions to log each request and response into a Log Group. The integrated S3 responses include 200 and 400 status codes and apply JSON content types. Optional configurations can be set up for the S3 bucket using the `config.conf` file such as bucket name and S3 Lifecycle Rules.
 
 The S3 bucket is configured as an event source that triggers a Lambda function which uses Amazon Rekognition as a `boto3` client to detect text from the uploaded images. This Lambda function has a Python 3.12 runtime, a five-second timeout to allow API retrieval, and basic execution permissions —including CloudWatch logging—, Rekognition access, and minimal read and write policies attached. 
@@ -101,6 +105,8 @@ Lambda scripts are tested with `unittest` and mocking features. Run the tests pa
 python -m tests
 ```
 
+Manual testing is encouraged for the deployed CDK stack by adding three image examples of possible inputs expected by the application in the `img/` directory. Images can be uploaded using cURL or through an API testing tool (e.g., Postman), and the results of each operation can be audited through CloudWatch Logs and reviewing the DynamoDB table items.
+
 ## Repository
 
 ```
@@ -108,6 +114,8 @@ cdk-isbn-analyzer/
 │
 ├── docs/                  # Files related to the project's documentation
 │   ├── diagram.png        # Draw.io diagram for AWS architecture basic visualization
+│
+├── img/                   # Example image files to manually test the CDK stack
 │
 ├── src/                   # Source files for the application
 │   ├── cdk/               # Package related to the CDK stack
