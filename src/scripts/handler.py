@@ -4,7 +4,7 @@ import logging
 
 import boto3
 from botocore.exceptions import ClientError
-from src.scripts.utils import structure_book_data
+from utils import structure_book_data
 
 # Set up logging
 logger = logging.getLogger(__name__)

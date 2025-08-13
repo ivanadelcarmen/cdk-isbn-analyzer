@@ -1,9 +1,16 @@
+from pathlib import Path
+import sys
+
 import json
 import os
 import urllib.error
 
 import unittest
 from unittest.mock import patch, MagicMock
+
+# Move to the scripts/ package folder to avoid exceptions regarding the import of Lambda modules
+scripts_package_path = str(Path(__file__).resolve().parent.parent / 'src' / 'scripts')
+sys.path.insert(0, scripts_package_path)
 
 from src.scripts.utils import fetch_book_data, structure_book_data
 from src.scripts.handler import lambda_handler
