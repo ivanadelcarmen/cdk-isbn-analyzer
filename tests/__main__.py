@@ -90,8 +90,7 @@ class TestStructureBookData(unittest.TestCase):
 
     @patch('src.scripts.utils.fetch_book_data')
     def test_empty_object(self, mock_fetch_book_data):
-        mock_res = {'totalItems': 0}
-        mock_fetch_book_data.return_value = mock_res
+        mock_fetch_book_data.return_value = {'totalItems': 0}
         
         isbn_13 = '9742544919120'
         isbn_10 = '9744537984'
