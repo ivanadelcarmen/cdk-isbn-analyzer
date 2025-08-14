@@ -51,8 +51,6 @@ Basic deployment settings can be configured in `config.conf` before deploying th
 * `deployOptions`
     * **region**: The AWS code of the region in which the stack will be deployed. Default: us-east-1
 
-Additionally, include the `--profile PROFILE_NAME` flag in case of having configured a specific AWS CLI profile.
-
 Preview the CloudFormation template and deploy the project to the cloud by running:
 
 ``` bash
@@ -64,6 +62,8 @@ Delete the project and all of its AWS resources and logs (review removalPolicy) 
 ``` bash
 cdk destroy
 ```
+
+Additionally, include the `--profile PROFILE_NAME` flag in case of having configured a specific AWS CLI profile.
 
 ## Architecture
 
@@ -104,7 +104,7 @@ Digits are extracted from the first line detected by the Rekognition client and 
 }
 ```
 
-The JSON object is then uploaded by the same Lambda function into a previously created DynamoDB table with provisioned settings, namely 1 RCU and 4 WCU. The partition key of the **isbn-events** table is the 'isbn' field but since data from equal ISBN numbers can be requested multiple times, the 'timestamp' field is set as the table's sort key, making the table act as a fact table by having a primary key composed by a unique asset identifier and a timestamp. ISBN request events can be later queried and grouped to retrieve desired data or identify exceptions through the 'exception' field (i.e., no matching results within the Google Books API).
+The JSON object is then uploaded by the same Lambda function into a previously created DynamoDB table with provisioned settings, namely 1 RCU and 2 WCU. The partition key of the **isbn-events** table is the 'isbn' field but since data from equal ISBN numbers can be requested multiple times, the 'timestamp' field is set as the table's sort key, making the table act as a fact table by having a primary key composed by a unique asset identifier and a timestamp. ISBN request events can be later queried and grouped to retrieve desired data or identify exceptions through the 'exception' field (i.e., no matching results within the Google Books API).
 
 #
 

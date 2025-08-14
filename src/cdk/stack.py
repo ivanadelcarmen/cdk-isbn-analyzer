@@ -170,7 +170,7 @@ class isbnProcessorStack(Stack):
                 table_name='isbn_events',
                 billing_mode=dynamodb.BillingMode.PROVISIONED,
                 read_capacity=1,
-                write_capacity=4,
+                write_capacity=2,
                 partition_key=dynamodb.Attribute(
                     name='isbn',
                     type=dynamodb.AttributeType.STRING
