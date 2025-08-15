@@ -33,7 +33,7 @@ Before deploying the project, dependencies have to be installed globally or loca
 
 ``` bash
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate # PowerShell command: venv/Scripts/Activate.ps1
 pip install -r requirements.txt
 ```
 ``` bash
